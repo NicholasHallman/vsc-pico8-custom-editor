@@ -43,13 +43,15 @@ class Pico8SpriteEditor {
     }
     getHtmlForWebview(webview) {
         const scriptUri = webview.asWebviewUri(vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'base.js')));
+        const styleUri = webview.asWebviewUri(vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'style.css')));
         // console.log(scriptUri);
         return `
 			<!DOCTYPE html>
-			<html lang="en" style="padding: 0; margin: 0;">
+			<html lang="en" style="padding: 0; margin: 0; background-color: var(--dark-grey);">
 				<head>
+					<link href="${styleUri}" rel="stylesheet" />
 				</head>
-				<body style="padding: 0; margin: 0;"></body>
+				<body style="margin: 0; padding: 0;"></body>
 				<script type="module" src="${scriptUri}"></script>
 			</html>
 		`;

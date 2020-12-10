@@ -16,14 +16,14 @@
 	"contributes": {
 		"customEditors": [
 			{
-			  "viewType": "advanderar.customeditor8",
-			  "displayName": "Pico8 Sprite Editor",
-			  "selector": [
-				{
-				  "filenamePattern": "*.p8"
-				}
-			  ],
-			  "priority": "default"
+				"viewType": "advanderar.customeditor8",
+				"displayName": "Pico8 Sprite Editor",
+				"selector": [
+					{
+						"filenamePattern": "*.p8"
+					}
+				],
+				"priority": "default"
 			}
 		]
 	},
