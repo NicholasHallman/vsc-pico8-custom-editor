@@ -1,0 +1,150 @@
+:root{
+    --black: #000000;
+    --dark-blue: #1D2B53;
+    --purple: #7E2553;
+    --dark-green: #008751;
+    --brown: #AB5236;
+    --dark-grey: #5F574F;
+    --grey: #C2C3C7;
+    --white: #FFF1E8;
+    --red: #FF004D;
+    --orange: #FFA300;
+    --yellow: #FFEC27;
+    --green: #00E436;
+    --blue: #29ADFF;
+    --indigo: #83769C;
+    --pink: #FF77A8;
+    --peach: #FFCCAA;
+}
+
+body{
+    width: min(100vh, 100vw);
+    height: min(100vh, 100vw);
+}
+
+h1 {
+    color: white;
+}
+
+.topbar {
+    height: 40px;
+    width: 100%;
+    background-color: var(--red);
+}
+
+.viewContainer {
+    width: calc(100% - 80px);
+    height: calc(70vh - 80px);
+    margin: 0 auto;
+    padding: 0 40px;
+    justify-content: space-between;
+    padding-top: 40px;
+    display: flex;
+    background-color: var(--dark-grey);
+}
+
+.spriteContainer {
+    width: 100%;
+    height: calc(30vh - 40px);
+    background-color: var(--black);
+    display: flex;
+    flex-wrap: wrap;
+}
+
+
+.sprite {
+    height: auto;
+    width: calc(100% / 16);
+    box-shadow: 0px 0px 0px 1px white;
+}
+
+.spriteView {
+    width: min(50vw, 50vh);
+    height: min(50vw, 50vh); 
+    background-color: black;
+}
+
+.colorView {
+    width: calc(40vh - 80px);
+    height: calc(40vh - 80px); 
+    background-color: black;
+    margin-left: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 5px;
+}
+
+.color{
+    background-color: white;
+    width: calc(100% / 4);
+    height: calc(100% / 4);
+}
+
+.color.selected {
+    box-shadow: 0px 0px 0px 5px white;
+    z-index: 2;
+}
+
+.black {
+    background-color: var(--black);
+}
+
+.darkblue {
+    background-color: var(--dark-blue);
+}
+
+.purple {
+    background-color: var(--purple);
+}
+
+.darkgreen {
+    background-color: var(--dark-green);
+}
+
+.brown {
+    background-color: var(--brown);
+}
+
+.darkgrey {
+    background-color: var(--dark-grey);
+}
+
+.grey {
+    background-color: var(--grey);
+}
+
+.white {
+    background-color: var(--white);
+}
+
+.red {
+    background-color: var(--red);
+}
+
+.orange {
+    background-color: var(--orange);
+}
+
+.yellow {
+    background-color: var(--yellow);
+}
+
+.green {
+    background-color: var(--green);
+}
+
+.blue {
+    background-color: var(--blue);
+}
+
+.indigo {
+    background-color: var(--indigo);
+}
+
+.pink {
+    background-color: var(--pink);
+}
+
+.peach {
+    background-color: var(--peach);
+}
