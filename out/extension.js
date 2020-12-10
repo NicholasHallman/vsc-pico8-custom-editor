@@ -26,19 +26,19 @@ class Pico8SpriteEditor {
                 text: document.getText(),
             });
         }
-        // const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-        // 	if (e.document.uri.toString() === document.uri.toString()) {
-        // 		updateWebview();
-        // 	}
-        // });
-        // // Make sure we get rid of the listener when our editor is closed.
-        // webviewPanel.onDidDispose(() => {
-        // 	changeDocumentSubscription.dispose();
-        // });
-        // // Receive message from the webview.
-        // webviewPanel.webview.onDidReceiveMessage(e => {
-        // 	console.log(e.type);
-        // });
+        const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
+            if (e.document.uri.toString() === document.uri.toString()) {
+                updateWebview();
+            }
+        });
+        // Make sure we get rid of the listener when our editor is closed.
+        webviewPanel.onDidDispose(() => {
+            changeDocumentSubscription.dispose();
+        });
+        // Receive message from the webview.
+        webviewPanel.webview.onDidReceiveMessage(e => {
+            console.log(e.type);
+        });
         updateWebview();
     }
     getHtmlForWebview(webview) {

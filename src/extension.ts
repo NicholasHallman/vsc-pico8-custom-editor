@@ -33,21 +33,21 @@ export class Pico8SpriteEditor implements vscode.CustomTextEditorProvider {
 			});
 		}
 
-		// const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-		// 	if (e.document.uri.toString() === document.uri.toString()) {
-		// 		updateWebview();
-		// 	}
-		// });
+		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
+			if (e.document.uri.toString() === document.uri.toString()) {
+				updateWebview();
+			}
+		});
 
-		// // Make sure we get rid of the listener when our editor is closed.
-		// webviewPanel.onDidDispose(() => {
-		// 	changeDocumentSubscription.dispose();
-		// });
+		// Make sure we get rid of the listener when our editor is closed.
+		webviewPanel.onDidDispose(() => {
+			changeDocumentSubscription.dispose();
+		});
 
-		// // Receive message from the webview.
-		// webviewPanel.webview.onDidReceiveMessage(e => {
-		// 	console.log(e.type);
-		// });
+		// Receive message from the webview.
+		webviewPanel.webview.onDidReceiveMessage(e => {
+			console.log(e.type);
+		});
 
 		updateWebview();
 	}
