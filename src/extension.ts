@@ -46,7 +46,13 @@ export class Pico8SpriteEditor implements vscode.CustomTextEditorProvider {
 
 		// Receive message from the webview.
 		webviewPanel.webview.onDidReceiveMessage(e => {
-			console.log(e.type);
+			switch(e.type){
+				case 'draw':
+					this.updateDocument(document, e);
+					break;
+				default:
+					break;
+			}
 		});
 
 		updateWebview();
@@ -74,6 +80,32 @@ export class Pico8SpriteEditor implements vscode.CustomTextEditorProvider {
 				<script type="module" src="${scriptUri}"></script>
 			</html>
 		`;
+	}
+
+	updateDocument(document: vscode.TextDocument, change: any) {
+		const headerLength = 8;
+		let text = document.getText();
+		if(text.indexOf('__gfx__') === -1) {
+			text += '__gfx__\n';
+			text += (new Array(64).fill(new Array(128).fill(0).join(''))).join('\n')
+		}
+		let graphicsAndRest = text.substr(text.indexOf('__gfx__') + headerLength);
+
+		const row = ((change.sprite % 16) * 8) + change.pos.x;
+		const column = (Math.floor((change.sprite / 16)) * 8) + change.pos.y;
+		if( row < 0 || column < 0) return;
+		console.log(row, column);
+		const arrayGraphics = graphicsAndRest.split('\n').map(row => row.split(''));
+		arrayGraphics[column][row] = change.color;
+
+		graphicsAndRest = arrayGraphics.map( row => row.join('')).join('\n');
+		
+		const replacement = text.substr(0, text.indexOf('__gfx__') + 8) + graphicsAndRest;
+
+		const edit = new vscode.WorkspaceEdit();
+		edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), replacement)
+
+		return vscode.workspace.applyEdit(edit);
 	}
 }
 

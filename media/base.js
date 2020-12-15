@@ -2,7 +2,12 @@ import {html, render} from 'https://unpkg.com/lit-html?module';
 
 (function() {
 
-    
+    let vscode;
+    try{
+        vscode = acquireVsCodeApi();
+    } catch {}
+
+
 const testData = [
     '111111112222222233333333444444445555555566666666777777778888888899999999aaaaaaaabbbbbbbbccccccccddddddddeeeeeeeeffffffff00000000',
     '111111112222222233333333444444445555555566666666777777778888888899999999aaaaaaaabbbbbbbbccccccccddddddddeeeeeeeeffffffff00000000',
@@ -68,6 +73,7 @@ const testData = [
         previewCtx: undefined,
         pixelData: testData,
         page: 0,
+        oldMessage: undefined
     }
 
     const colorHexs = [
@@ -107,7 +113,6 @@ const testData = [
             }
 
         });
-        console.log('replace test data')
         if(gfxLines.length === 0){
             state.pixelData = new Array(64).fill(new Array(128).fill(0).join(''))
             event.data.text += '__gfx__\n'
@@ -167,9 +172,8 @@ const testData = [
         ctx.fillStyle = colorHexs[0];
         ctx.fillRect(0,0, ctx.canvas.scrollWidth, ctx.canvas.scrollHeight);
 
-        let width = Math.floor(ctx.canvas.scrollWidth / 8);
-        let height = Math.floor(ctx.canvas.scrollHeight / 8);
-        console.log(pixels);
+        let width = Math.round(ctx.canvas.scrollWidth / 8);
+        let height = Math.round(ctx.canvas.scrollHeight / 8);
         pixels.forEach((row, y) => row.split('').forEach( (cell, x) => {
             let color = parseInt(cell, 16);
             ctx.fillStyle = colorHexs[color];
@@ -234,19 +238,42 @@ const testData = [
         }
     }
 
+    const isSameMessage = (a, b) => 
+            a !== undefined &&
+            b !== undefined &&
+            a.type === b.type && 
+            a.pos.x === b.pos.x &&
+            a.pos.y === b.pos.y &&
+            a.sprite === b.sprite &&
+            a.color === b.color;
+
     const handleDraw = (e) => {
-        if( e.buttons == 1 ){
-            state.ctx.rect();
+        if( e.buttons == 1 || e.type === 'click'){
+            const stringSize = getComputedStyle(e.target)['width']
+            let size = parseFloat(stringSize.substring(0,stringSize.length - 2)) / 8;
+            let x = Math.floor((e.clientX - state.spriteCtx.canvas.offsetLeft) / size);
+            let y = Math.floor((e.clientY - state.spriteCtx.canvas.offsetTop) / size);
+            const newMessage = { 
+                type: 'draw', 
+                pos: {x, y},
+                sprite: state.activeSprite,
+                color: colors.indexOf(state.activeColor).toString(16)
+            };
+            if(x >= 0 && x < 16 && y >= 0 && y < 16 && !isSameMessage(state.oldMessage, newMessage)) {
+                try{
+                    console.log('post message')
+                    vscode.postMessage(newMessage);
+                    state.oldMessage = newMessage;
+                } catch {}
+            }
         }
     }
 
     render(update(), document.body);
 
     state.spriteCtx = document.querySelector('.spriteView').getContext("2d");
-    state.spriteCtx.imageSmoothingEnabled= false
 
     state.previewCtx = document.querySelector('.spriteContainer').getContext("2d");
-    state.spriteCtx.imageSmoothingEnabled= false
 
     updateCanvas();
     updatePreview();

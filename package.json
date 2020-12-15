@@ -23,7 +23,7 @@
 						"filenamePattern": "*.p8"
 					}
 				],
-				"priority": "default"
+				"priority": "option"
 			}
 		]
 	},
