@@ -79,22 +79,36 @@ export class Pico8SpriteEditor implements vscode.CustomTextEditorProvider {
 	}
 
 	updateDocument(document: vscode.TextDocument, change: any) {
-		const headerLength = 8;
-		let text = document.getText();
-		if(text.indexOf('__gfx__') === -1) {
-			text += '__gfx__\n';
-			text += (new Array(64).fill(new Array(128).fill(0).join(''))).join('\n')
-		}
-		let graphicsAndRest = text.substr(text.indexOf('__gfx__') + headerLength);
 
+		let text = document.getText();
+		// get the line ending to fix off by one errors
+		const CRLF = '\r\n';
+		const LF = '\n';
+		const lineEnding = text.indexOf('\r') !== -1 ? CRLF : LF;
+		const headerLength = 7 + lineEnding.length;
+
+		// a p8 file may not have a graphics section yet, so we create it if it's not there.
+		if(text.indexOf('__gfx__') === -1) {
+			text += `${lineEnding}__gfx__${lineEnding}`;
+			text += (new Array(64).fill(new Array(128).fill(0).join(''))).join(lineEnding)
+		}
+
+		let graphicsAndRest = text.substr(text.indexOf('__gfx__') + headerLength);
 		const row = ((change.sprite % 16) * 8) + change.pos.x;
 		const column = (Math.floor((change.sprite / 16)) * 8) + change.pos.y;
-		if( row < 0 || column < 0) return;
-		const arrayGraphics = graphicsAndRest.split('\n').map(row => row.split(''));
-		arrayGraphics[column][row] = change.color;
 
-		graphicsAndRest = arrayGraphics.map( row => row.join('')).join('\n');
-		
+		// out of bounds? exit
+		if( row < 0 || column < 0) return;
+
+		const arrayGraphics = graphicsAndRest.split(lineEnding).map(row => row.split(''));
+		// color already there? exit
+		if(arrayGraphics[column][row] === change.color) return;
+
+		// turn the array back into a string, replace the old graphics section with
+		// the new one and save it to the virual doc.
+		// TODO only replace the graphics section. not the whole doc.
+		arrayGraphics[column][row] = change.color;
+		graphicsAndRest = arrayGraphics.map( row => row.join('')).join(lineEnding);
 		const replacement = text.substr(0, text.indexOf('__gfx__') + 8) + graphicsAndRest;
 
 		const edit = new vscode.WorkspaceEdit();

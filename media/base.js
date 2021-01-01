@@ -73,7 +73,6 @@ const testData = [
         currentPage: 0,
         previewCtx: undefined,
         pixelData: testData,
-        page: 0,
         oldMessage: undefined
     }
 
@@ -98,6 +97,11 @@ const testData = [
 
     window.addEventListener('message', event => {
         const documentText = event.data.text;
+
+        const CRLF = '\r\n';
+		const LF = '\n';
+        const lineEnding = documentText.indexOf('\r') !== -1 ? CRLF : LF;
+        
         const lines = documentText.split('\n');
         let found = false;
         let gfxLines = [];
@@ -108,20 +112,18 @@ const testData = [
                 } else {
                     gfxLines.push(line);
                 }
-            } 
+            }
             if(line.includes('__gfx__')) {
                 found = true
             }
-
         });
         if(gfxLines.length === 0){
             state.pixelData = new Array(64).fill(new Array(128).fill(0).join(''))
-            event.data.text += '__gfx__\n'
-            state.pixelData.forEach( row => event.data.text += row + '\n');
+            event.data.text += `${lineEnding}__gfx__${lineEnding}`;
+            state.pixelData.forEach( row => event.data.text += row + lineEnding);
             // fill in the gfx section
         } else {
             state.pixelData = gfxLines;
-
         }
         updatePreview();
         updateCanvas();
@@ -169,7 +171,7 @@ const testData = [
             <div class="sprites">
                 <canvas class="spriteContainer"></canvas>
                 <div class="spriteContainer highlighter" @mousemove=${handleSprite} @click=${handleSprite}>
-                    ${ (new Array(64).fill(0).map( (_,i) => html`<div sprite="${i}" class="sprite ${isSelected(state.activeSprite, i)}"></div>`) )}
+                    ${ (new Array(64).fill(0).map( (_,i) => html`<div sprite="${i}" class="sprite ${isSelected(state.activeSprite - (state.currentPage * 64), i)}"></div>`) )}
                 </div>
             </div>
             <div class="topbar"></div>
@@ -226,15 +228,21 @@ const testData = [
         //     }
         // }
 
-        const currentPage = (state.page * 4)
+        const currentPage = (state.currentPage * 8 * 4)
+        let ry = 0;
         for(let y = currentPage; y < (currentPage + (8*4)); y++){
             let row = state.pixelData[y]
-            row.split('').forEach((cell,x) => {
-                let color = parseInt(cell, 16);
-                ctx.fillStyle = colorHexs[color];
-                ctx.strokeStyle = colorHexs[color];
-                ctx.fillRect(Math.floor(x * width), Math.floor(y * height), Math.ceil(width), Math.ceil(height));
-            })
+            try {
+                row.split('').forEach((cell,x) => {
+                    let color = parseInt(cell, 16);
+                    ctx.fillStyle = colorHexs[color];
+                    ctx.strokeStyle = colorHexs[color];
+                    ctx.fillRect(Math.floor(x * width), Math.floor(ry * height), Math.ceil(width), Math.ceil(height));
+                })
+                ry += 1;
+            } catch {
+                console.log('row doesnt exists');
+            }
         }
     }
 
@@ -254,7 +262,7 @@ const testData = [
         if( e.buttons == 1 || e.type === 'click'){
             const sprite = e.target.getAttribute('sprite');
             if(sprite !== null){
-                state.activeSprite = Number(sprite);
+                state.activeSprite = Number(sprite) + (64 * state.currentPage);
                 updateCanvas();
                 render(update(), document.body);
             }
@@ -262,20 +270,22 @@ const testData = [
     }
 
     const isSameMessage = (a, b) => 
-            a !== undefined &&
-            b !== undefined &&
-            a.type === b.type && 
-            a.pos.x === b.pos.x &&
-            a.pos.y === b.pos.y &&
-            a.sprite === b.sprite &&
-            a.color === b.color;
+        a !== undefined &&
+        b !== undefined &&
+        a.type === b.type && 
+        a.pos.x === b.pos.x &&
+        a.pos.y === b.pos.y &&
+        a.sprite === b.sprite &&
+        a.color === b.color;
 
     const handleDraw = (e) => {
         if( e.buttons == 1 || e.type === 'click'){
             const stringSize = getComputedStyle(e.target)['width']
             let size = parseFloat(stringSize.substring(0,stringSize.length - 2)) / 8;
-            let x = Math.floor((e.clientX - state.spriteCtx.canvas.offsetLeft) / size);
-            let y = Math.floor((e.clientY - state.spriteCtx.canvas.offsetTop) / size);
+            const topOffset = state.spriteCtx.canvas.offsetTop + state.spriteCtx.canvas.parentElement.offsetTop
+            const leftOffset = state.spriteCtx.canvas.offsetLeft + state.spriteCtx.canvas.parentElement.offsetLeft
+            let x = Math.floor((e.clientX - leftOffset) / size);
+            let y = Math.floor((e.clientY - topOffset) / size);
             const newMessage = { 
                 type: 'draw', 
                 pos: {x, y},
@@ -283,6 +293,7 @@ const testData = [
                 color: colors.indexOf(state.activeColor).toString(16)
             };
             if(x >= 0 && x < 16 && y >= 0 && y < 16 && !isSameMessage(state.oldMessage, newMessage)) {
+                console.log(newMessage);
                 try{
                     vscode.postMessage(newMessage);
                     state.oldMessage = newMessage;
