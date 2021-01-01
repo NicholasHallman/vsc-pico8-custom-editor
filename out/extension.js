@@ -8,7 +8,6 @@ const path = require("path");
 class Pico8SpriteEditor {
     constructor(context) {
         this.context = context;
-        console.log('Constructor!');
     }
     static register(context) {
         const provider = new Pico8SpriteEditor(context);
@@ -50,7 +49,6 @@ class Pico8SpriteEditor {
     getHtmlForWebview(webview) {
         const scriptUri = webview.asWebviewUri(vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'base.js')));
         const styleUri = webview.asWebviewUri(vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'style.css')));
-        // console.log(scriptUri);
         return `
 			<!DOCTYPE html>
 			<html lang="en" style="padding: 0; margin: 0; background-color: var(--dark-grey);">
@@ -74,7 +72,6 @@ class Pico8SpriteEditor {
         const column = (Math.floor((change.sprite / 16)) * 8) + change.pos.y;
         if (row < 0 || column < 0)
             return;
-        console.log(row, column);
         const arrayGraphics = graphicsAndRest.split('\n').map(row => row.split(''));
         arrayGraphics[column][row] = change.color;
         graphicsAndRest = arrayGraphics.map(row => row.join('')).join('\n');

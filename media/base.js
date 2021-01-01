@@ -70,6 +70,7 @@ const testData = [
         activeColor: 'black',
         activeSprite: 0,
         spriteCtx: undefined,
+        currentPage: 0,
         previewCtx: undefined,
         pixelData: testData,
         page: 0,
@@ -134,6 +135,21 @@ const testData = [
 
     const isSelected = (a, b) => a === b ? 'selected' : '';
 
+    const convertSpriteNum = (n) => {
+        const s = n.toString();
+        if(s.length === 3) return s;
+        else if(s.length === 2) return `0${s}`;
+        return `00${s}`;
+    }
+
+    const changePage = (e) => {
+        console.log(e.target)
+        const tabNumber = e.target.getAttribute('tab');
+        state.currentPage = Number(tabNumber);
+        updatePreview();
+        render(update(), document.body);
+    }
+
     const update = () => html`
         <div class="center-full">
             <div class="topbar"></div>
@@ -141,6 +157,13 @@ const testData = [
                 <canvas class="spriteView"></canvas>
                 <div class="colorView" @mousemove=${handleColor} @click=${handleColor}>
                     ${ colors.map(color => html`<div class="color ${color} ${isSelected(color, state.activeColor)}" color="${color}"></div>`) }
+                </div>
+                <div class="page-tab">
+                    <div class="sprite-number">${convertSpriteNum(state.activeSprite)}</div>
+                    <div tab="0" @click=${changePage} class="tab ${state.currentPage === 0 ? 'selected' : ''}">0</div>
+                    <div tab="1" @click=${changePage} class="tab ${state.currentPage === 1 ? 'selected' : ''}">1</div>
+                    <div tab="2" @click=${changePage} class="tab ${state.currentPage === 2 ? 'selected' : ''}">2</div>
+                    <div tab="3" @click=${changePage} class="tab ${state.currentPage === 3 ? 'selected' : ''}">3</div>
                 </div>
             </div>
             <div class="sprites">
@@ -261,7 +284,6 @@ const testData = [
             };
             if(x >= 0 && x < 16 && y >= 0 && y < 16 && !isSameMessage(state.oldMessage, newMessage)) {
                 try{
-                    console.log('post message')
                     vscode.postMessage(newMessage);
                     state.oldMessage = newMessage;
                 } catch {}

@@ -15,9 +15,7 @@ export class Pico8SpriteEditor implements vscode.CustomTextEditorProvider {
 
 	constructor(
 		private readonly context: vscode.ExtensionContext
-	) { 
-		console.log('Constructor!');
-	}
+	) {}
 
 	resolveCustomTextEditor(document: vscode.TextDocument, webviewPanel: vscode.WebviewPanel, token: vscode.CancellationToken): void | Thenable<void> {
 		
@@ -68,8 +66,6 @@ export class Pico8SpriteEditor implements vscode.CustomTextEditorProvider {
 			path.join(this.context.extensionPath, 'media', 'style.css')
 		));
 
-		// console.log(scriptUri);
-
 		return `
 			<!DOCTYPE html>
 			<html lang="en" style="padding: 0; margin: 0; background-color: var(--dark-grey);">
@@ -94,7 +90,6 @@ export class Pico8SpriteEditor implements vscode.CustomTextEditorProvider {
 		const row = ((change.sprite % 16) * 8) + change.pos.x;
 		const column = (Math.floor((change.sprite / 16)) * 8) + change.pos.y;
 		if( row < 0 || column < 0) return;
-		console.log(row, column);
 		const arrayGraphics = graphicsAndRest.split('\n').map(row => row.split(''));
 		arrayGraphics[column][row] = change.color;
 
