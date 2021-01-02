@@ -1,6 +1,7 @@
-import { html, defineElement, useState, useEffect, useRef, useStyle, useProperty } from "https://unpkg.com/fuco?module";
+import { html, defineElement, useState, useEffect, useRef, useStyle, useProperty, useAttribute } from "https://unpkg.com/fuco?module";
 import { colorHexs, colors } from './Colors.js';
 import style from './sprite-styles.js';
+
 
 (function() {
 
@@ -8,6 +9,7 @@ import style from './sprite-styles.js';
 
         let pixelData = useProperty('pixel-data');
         let vscode = useProperty('vs-code');
+        let path = useAttribute('path');
 
         if(vscode) console.log('got vscode api');
 
@@ -15,7 +17,8 @@ import style from './sprite-styles.js';
             activeColor: 'black',
             activeSprite: 0,
             currentPage: 0,
-            oldMessage: undefined
+            oldMessage: undefined,
+            tool: 'pencil',
         })
     
         let spriteCtx = useRef(null);
@@ -58,6 +61,14 @@ import style from './sprite-styles.js';
                 }
             }
         }
+
+        const handleToolSelect = (e) => {
+            let tool = e.target.getAttribute('tool');
+            if(tool === null) return;
+            let newState = {...state};
+            newState.tool = tool;
+            setState(newState);
+        }
     
         const isSameMessage = (a, b) => 
             a !== undefined &&
@@ -72,16 +83,22 @@ import style from './sprite-styles.js';
             let newState = {...state};
             let canvas = spriteCtx.current
             if( e.buttons == 1 || e.type === 'click'){
-                const stringSize = getComputedStyle(e.target)['width']
+                const stringSize = getComputedStyle(canvas)['width']
                 let size = parseFloat(stringSize.substring(0,stringSize.length - 2)) / 8;
 
                 const topOffset = canvas.offsetTop + canvas.parentElement.offsetTop
                 const leftOffset = canvas.offsetLeft + canvas.parentElement.offsetLeft
 
-                let x = Math.floor((e.clientX - leftOffset) / size);
-                let y = Math.floor((e.clientY - topOffset) / size);
+                let x = e.clientX - leftOffset;
+                let y = e.clientY - topOffset;
+                if(x > (size * 8) || y > (size * 8)) return;
+
+                x = Math.floor(x / size);
+                y = Math.floor(y / size);
+
                 const newMessage = { 
                     type: 'draw', 
+                    tool: state.tool,
                     pos: {x, y},
                     sprite: state.activeSprite,
                     color: colors.indexOf(state.activeColor).toString(16)
@@ -171,10 +188,18 @@ import style from './sprite-styles.js';
         return html`
             <div ref=${root} class="center-full">
                 <div class="topbar"></div>
-                <div class="viewContainer" @mousemove=${handleDraw} @click=${handleDraw}>
-                    <canvas ref=${spriteCtx} class="spriteView"></canvas>
+                <div class="viewContainer" >
+                    <canvas @mousemove=${handleDraw} @click=${handleDraw} ref=${spriteCtx} class="spriteView"></canvas>
                     <div class="colorView" @mousemove=${handleColor} @click=${handleColor}>
                         ${ colors.map(color => html`<div class="color ${color} ${isSelected(color, state.activeColor)}" color="${color}"></div>`) }
+                    </div>
+                    <div class="tool-bar" @click=${handleToolSelect}>
+                        <img tool="pencil" class="tool-button ${isSelected('pencil', state.tool)}" src="${path}/images/pencil.png"/>
+                        <!--img tool="stamp" class="tool-button ${isSelected('stamp', state.tool)}" src="${path}/images/stamp.png"/-->
+                        <!--img tool="select" class="tool-button ${isSelected('select', state.tool)}" src="${path}/images/select.png"/-->
+                        <!--img tool="move" class="tool-button ${isSelected('move', state.tool)}" src="${path}/images/hand.png"/-->
+                        <img tool="bucket" class="tool-button ${isSelected('bucket', state.tool)}" src="${path}/images/bucket.png"/>
+                        <!--img tool="shape" class="tool-button ${isSelected('shape', state.tool)}" src="${path}/images/rect.png"/-->
                     </div>
                     <div class="page-tab">
                         <div class="sprite-number">${convertSpriteNum(state.activeSprite)}</div>
@@ -190,7 +215,7 @@ import style from './sprite-styles.js';
                         ${ (new Array(64).fill(0).map( (_,i) => html`<div sprite="${i}" class="sprite ${isSelected(state.activeSprite - (state.currentPage * 64), i)}"></div>`) )}
                     </div>
                 </div>
-                <div class="topbar"></div>
+                <div class="bottombar"></div>
             </div>
         `
     }

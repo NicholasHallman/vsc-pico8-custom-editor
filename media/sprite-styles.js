@@ -4,7 +4,7 @@ export default css`
 .center-full{
     width: min(100vh, 100vw);
     height: min(100vh, 100vw);
-    margin: auto auto;
+    overflow: hidden;
 }
 
 h1 {
@@ -17,10 +17,16 @@ h1 {
     background-color: var(--red);
 }
 
+.bottombar{
+    height: calc(calc(calc(calc(min(100vh, 100vw) - 6.25%) - calc((min(100vh, 100vw) - 14%) - ((min(100vh, 100vw) / 16) * 4))) - calc((min(100vh, 100vw) / 16) * 4)) - 10px);
+    width: 100%;
+    background-color: var(--red);
+}
+
 .viewContainer {
     position: relative;
     width: calc(100% - 80px);
-    height: calc(calc(100vh - 14%) - calc(calc(min(100vh, 100vw) / 16) * 4));
+    height: calc(calc(min(100vh, 100vw) - 14%) - calc(calc(min(100vh, 100vw) / 16) * 4));
     margin: 0 auto;
     padding: 0 40px;
     justify-content: space-between;
@@ -67,8 +73,8 @@ h1 {
 }
 
 .colorView {
-    width: calc(40vh - 80px);
-    height: calc(40vh - 80px); 
+    width: calc(min(40vh, 40vw) - 80px);
+    height: calc(min(40vh, 40vw) - 80px); 
     background-color: black;
     margin-left: 20px;
     display: flex;
@@ -97,11 +103,12 @@ h1 {
 
 .tab {
     font-family: Pico8;
-    padding: 5px 5px 5px 10px;
-    font-size: 20px;
+    padding: min(1vh, 1vw);
+    padding-left: min(2vh, 2vw);
+    font-size: min(3.5vw, 3.5vh);
     background-color: var(--grey);
     color: var(--indigo);
-    height: 22px;
+    height: min(4vh, 4vw);
     margin-right: 5px;
 }
 
@@ -109,6 +116,27 @@ h1 {
     background-color: var(--white);
     border-bottom: 5px solid var(--pink);
     color: var(--pink);
+}
+
+.tool-bar {
+    display: flex;
+    position: absolute;
+    bottom: 10px;
+    align-items: flex-end;
+    width: min(50vw, 50vh);
+}
+
+.tool-bar > img {
+    cursor: pointer;
+    opacity: 0.5;
+    margin-right: 10px;
+    height: 35px;
+    object-fit: contain;
+    width: calc(calc(min(50vw, 50vh) / 6) - 8px)
+}
+
+.tool-bar > img.selected {
+    opacity: 1;
 }
 
 .sprite-number {

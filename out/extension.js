@@ -56,6 +56,7 @@ class Pico8SpriteEditor {
     getHtmlForWebview(webview) {
         const scriptUri = webview.asWebviewUri(vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'base.js')));
         const styleUri = webview.asWebviewUri(vscode.Uri.file(path.join(this.context.extensionPath, 'media', 'style.css')));
+        const media = webview.asWebviewUri(vscode.Uri.file(path.join(this.context.extensionPath, 'media')));
         return `
 			<!DOCTYPE html>
 			<html lang="en" style="padding: 0; margin: 0; background-color: var(--dark-grey);">
@@ -63,7 +64,7 @@ class Pico8SpriteEditor {
 					<link href="${styleUri}" rel="stylesheet" />
 				</head>
 				<body style="margin: 0; padding: 0;">
-					<pico8-router></pico8-router>
+					<pico8-router path=${media}></pico8-router>
 				</body>
 				<script type="module" src="${scriptUri}"></script>
 			</html>
@@ -88,18 +89,62 @@ class Pico8SpriteEditor {
         if (row < 0 || column < 0)
             return;
         const arrayGraphics = graphicsAndRest.split(lineEnding).map(row => row.split(''));
-        // color already there? exit
-        if (arrayGraphics[column][row] === change.color)
+        const results = this.selectTool(arrayGraphics, change, { column, row });
+        if (!results.changes)
             return;
         // turn the array back into a string, replace the old graphics section with
         // the new one and save it to the virual doc.
         // TODO only replace the graphics section. not the whole doc.
-        arrayGraphics[column][row] = change.color;
         graphicsAndRest = arrayGraphics.map(row => row.join('')).join(lineEnding);
         const replacement = text.substr(0, text.indexOf('__gfx__') + 8) + graphicsAndRest;
         const edit = new vscode.WorkspaceEdit();
         edit.replace(document.uri, new vscode.Range(0, 0, document.lineCount, 0), replacement);
         return vscode.workspace.applyEdit(edit);
+    }
+    selectTool(arrayGraphics, change, pos) {
+        switch (change.tool) {
+            case 'pencil':
+                return this.pencil(arrayGraphics, change, pos);
+            case 'bucket':
+                return this.bucket(arrayGraphics, change, pos);
+        }
+        return { changes: false };
+    }
+    pencil(arrayGraphics, change, pos) {
+        if (arrayGraphics[pos.column][pos.row] === change.color)
+            return { changes: false, arrayGraphics };
+        arrayGraphics[pos.column][pos.row] = change.color;
+        return { changes: true, arrayGraphics };
+    }
+    bucket(arrayGraphics, change, pos) {
+        console.log("Bucket");
+        let colorToChange = arrayGraphics[pos.column][pos.row];
+        if (colorToChange === change.color)
+            return { changes: false };
+        arrayGraphics = this.changeColorAndRecurse(arrayGraphics, change, pos, pos, colorToChange);
+        return { changes: true, arrayGraphics };
+    }
+    changeColorAndRecurse(arrayGraphics, change, pos, origin, colorToChange) {
+        // figure out the left and top boundary
+        let firstRow = Math.floor(origin.row / 8) * 8;
+        let firstColm = Math.floor(origin.column / 8) * 8;
+        // make sure we don't go under them
+        if (pos.row < firstRow || pos.column < firstColm)
+            return arrayGraphics;
+        // find the bottom and right boundary, but exclude the top and left boundary
+        if (pos.row % 8 === 0 && pos.row !== firstRow)
+            return arrayGraphics;
+        if (pos.column % 8 === 0 && pos.column !== firstColm)
+            return arrayGraphics;
+        let currentColor = arrayGraphics[pos.column][pos.row];
+        if (colorToChange !== currentColor)
+            return arrayGraphics;
+        arrayGraphics[pos.column][pos.row] = change.color;
+        arrayGraphics = this.changeColorAndRecurse(arrayGraphics, change, { column: pos.column - 1, row: pos.row }, origin, colorToChange);
+        arrayGraphics = this.changeColorAndRecurse(arrayGraphics, change, { column: pos.column + 1, row: pos.row }, origin, colorToChange);
+        arrayGraphics = this.changeColorAndRecurse(arrayGraphics, change, { column: pos.column, row: pos.row - 1 }, origin, colorToChange);
+        arrayGraphics = this.changeColorAndRecurse(arrayGraphics, change, { column: pos.column, row: pos.row + 1 }, origin, colorToChange);
+        return arrayGraphics;
     }
 }
 exports.Pico8SpriteEditor = Pico8SpriteEditor;

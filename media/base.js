@@ -1,4 +1,4 @@
-import { html, defineElement, useEffect, useState} from "https://unpkg.com/fuco?module";
+import { html, defineElement, useEffect, useState, useAttribute} from "https://unpkg.com/fuco?module";
 
 import './SpritePage.js';
 
@@ -14,6 +14,7 @@ import './SpritePage.js';
     defineElement('pico8-router', () => {
 
         let [pixelData, setPixelData] = useState(undefined)
+        let path = useAttribute('path');
 
         useEffect(() => {
             window.addEventListener('message', event => {
@@ -55,7 +56,7 @@ import './SpritePage.js';
         }, []);
 
         return html`
-            <sprite-page .vs-code=${vscode} .pixel-data=${pixelData}></sprite-page>
+            <sprite-page .vs-code=${vscode} .pixel-data=${pixelData} path=${path}></sprite-page>
         `
     });
 

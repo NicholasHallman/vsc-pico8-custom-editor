@@ -29,5 +29,7 @@ body{
     width: 100vw;
     height: 100vh;
     overflow: hidden;
-    background-color: var(--black)
+    background-color: var(--black);
+    min-width: 550px;
+    min-height: 550px;
 }
