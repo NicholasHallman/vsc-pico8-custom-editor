@@ -45,6 +45,13 @@ export class Pico8SpriteEditor implements vscode.CustomTextEditorProvider {
 		// Receive message from the webview.
 		webviewPanel.webview.onDidReceiveMessage(e => {
 			switch(e.type){
+				case 'start-sprite': 
+					console.log('sending data');
+					webviewPanel.webview.postMessage({
+						type: 'update',
+						text: document.getText(),
+					});
+					break;
 				case 'draw':
 					this.updateDocument(document, e);
 					break;
@@ -72,7 +79,9 @@ export class Pico8SpriteEditor implements vscode.CustomTextEditorProvider {
 				<head>
 					<link href="${styleUri}" rel="stylesheet" />
 				</head>
-				<body style="margin: 0; padding: 0;"></body>
+				<body style="margin: 0; padding: 0;">
+					<pico8-router></pico8-router>
+				</body>
 				<script type="module" src="${scriptUri}"></script>
 			</html>
 		`;
